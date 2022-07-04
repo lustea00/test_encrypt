@@ -1,17 +1,13 @@
-library test_encrypt;
+import 'dart:typed_data';
 
-import 'salt.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pinenacl/x25519.dart';
-import 'package:pointycastle/key_derivators/argon2_native_int_impl.dart';
+import 'package:pointycastle/key_derivators/argon2.dart';
 import 'package:pointycastle/pointycastle.dart';
+import 'package:test_encrypt/salt.dart';
 
-// pisah argon sama screetbox
-// argonencrypt
-// secretboxencrypt
-
-class TestEncrypt {
-  static Future<Uint8List> hashArgon2(String password) async {
+class ArgonEncrypt {
+  static Future<Uint8List> generateHash(String password) async {
     Uint8List pin = Uint8List.fromList(password.codeUnits);
     Salt salt = await _generateAndSaveSalt();
 
@@ -33,19 +29,6 @@ class TestEncrypt {
     var result = gen.process(passwordBytes);
 
     return result;
-  }
-
-  static Uint8List encryptSecretBox(Uint8List hash, Uint8List message) {
-    final box = SecretBox(hash);
-    final encrypted = box.encrypt(message);
-    return encrypted.toUint8List();
-  }
-
-  static String decryptScretBox(Uint8List hash, Uint8List encryptedMessage) {
-    final encrypted = EncryptedMessage.fromList(encryptedMessage);
-    final box = SecretBox(hash);
-    final decrypted = box.decrypt(encrypted);
-    return String.fromCharCodes(decrypted);
   }
 
   static Future<Salt> _generateAndSaveSalt() async {
