@@ -6,7 +6,7 @@ A new Flutter plugin project.
 
 Example:
 
-```
+```dart
     String message = 'message tes';
     String pin = '123456';
 
