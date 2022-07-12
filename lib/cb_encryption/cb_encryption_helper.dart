@@ -60,7 +60,7 @@ class CBEncryptionHelper {
       {required Uint8List hash, String tag = 'hash_tag'}) async {
     //Encrypt and get encrypted HASH
     final encrypted = await fhsm.encrypt(
-      message: String.fromCharCodes(hash),
+      message: CBConverter.convertUint8ListToString(hash),
       accessControl: AccessControlHsm(
         authRequired: true,
         options: [AccessControlOption.biometryAny],
@@ -79,7 +79,7 @@ class CBEncryptionHelper {
     final encryptedHash = await cbSecureStorage.load(tag);
     //decrypt using hardware
     final decrypted = await fhsm.decrypt(
-      message: Uint8List.fromList(encryptedHash!.codeUnits),
+      message: CBConverter.convertStringToUint8List(encryptedHash!),
       accessControl: AccessControlHsm(
         authRequired: true,
         options: [AccessControlOption.biometryAny],
@@ -90,8 +90,13 @@ class CBEncryptionHelper {
     return decrypted!;
   }
 
-  Future<void> encryptAndSaveKey(
-      Uint8List hash, Uint8List presignKey, String tag) async {
+  ///This function will return layer 1 encryption
+  ///layer 1 : encrypted message with hardware (enclave/strongbox/tee)
+  Future<Uint8List> encryptAndSaveKey(
+    Uint8List hash,
+    Uint8List presignKey,
+    String tag,
+  ) async {
     String decrypted = String.fromCharCodes(presignKey);
     //Encrypt with hardware
     final encrypted = await fhsm.encrypt(
@@ -108,6 +113,7 @@ class CBEncryptionHelper {
 
     await cbSecureStorage.save(
         tag, CBConverter.convertUint8ListToString(hashed));
+    return encrypted;
   }
 
   //returned key is a encrypted key and only can be decrypt by hardware
