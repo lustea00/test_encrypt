@@ -4,7 +4,6 @@ import 'package:pinenacl/x25519.dart';
 import 'package:pointycastle/key_derivators/argon2.dart';
 import 'package:pointycastle/pointycastle.dart';
 import 'package:test_encrypt/salt.dart';
-import 'package:test_encrypt/secure_storage.dart';
 
 class ArgonEncrypt {
   static Future<Uint8List> getHashByPassword(String password, Salt salt) async {
@@ -29,9 +28,8 @@ class ArgonEncrypt {
     return result;
   }
 
-  static Future<Uint8List> generateHash(String password) async {
+  static Future<Uint8List> generateHash(String password, Salt salt) async {
     Uint8List pin = Uint8List.fromList(password.codeUnits);
-    Salt salt = await _generateAndSaveSalt(password);
 
     var parameters = Argon2Parameters(
       Argon2Parameters.ARGON2_id,
@@ -77,18 +75,18 @@ class ArgonEncrypt {
     return result;
   }
 
-  static Future<Salt> _generateAndSaveSalt(String password) async {
-    //check if saved salt with password already exist
-    final saltString = await SecureStorage.getSalt(password);
-    Salt newSalt;
-    if (saltString == null) {
-      newSalt = Salt.newSalt();
-    } else {
-      newSalt = Salt(saltString.codeUnits);
-    }
+  // static Future<Salt> _generateAndSaveSalt(String password) async {
+  //   //check if saved salt with password already exist
+  //   final saltString = await SecureStorage.getSalt(password);
+  //   Salt newSalt;
+  //   if (saltString == null) {
+  //     newSalt = Salt.newSalt();
+  //   } else {
+  //     newSalt = Salt(saltString.codeUnits);
+  //   }
 
-    String s = String.fromCharCodes(newSalt.bytes);
-    await SecureStorage.saveSalt(password, s);
-    return newSalt;
-  }
+  //   String s = String.fromCharCodes(newSalt.bytes);
+  //   await CBSecureStorage.saveSalt(password, s);
+  //   return newSalt;
+  // }
 }

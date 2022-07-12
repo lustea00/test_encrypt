@@ -13,10 +13,11 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   pinenacl: ^0.3.4
   pointycastle: ^3.6.0
-  plugin_platform_interface: ^2.0.2
-  secure_enclave:
-  # flutter_hsm:
-  #   path: /Users/anan/Downloads/flutter_hsm-feature-dev
+  plugin_platform_interface: ^2.0.2 
+  flutter_hsm:
+    git:
+      url: https://github.com/mazidahmad/flutter_hsm
+      ref: feature/dev
 dev_dependencies:
   flutter_test:
     sdk: flutter
