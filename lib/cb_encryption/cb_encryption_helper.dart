@@ -94,13 +94,12 @@ class CBEncryptionHelper {
   ///layer 1 : encrypted message with hardware (enclave/strongbox/tee)
   Future<Uint8List> encryptAndSaveKey(
     Uint8List hash,
-    Uint8List presignKey,
+    String presignKey,
     String tag,
   ) async {
-    String decrypted = String.fromCharCodes(presignKey);
     //Encrypt with hardware
     final encrypted = await fhsm.encrypt(
-      message: decrypted,
+      message: presignKey,
       accessControl: AccessControlHsm(
         authRequired: true,
         options: [AccessControlOption.privateKeyUsage],
@@ -110,9 +109,7 @@ class CBEncryptionHelper {
     //Encrypt using secret box with has as a key
     final hashed = SecretBoxEncrypt.hashMessage(hash, encrypted!);
     //Save the encrypted to secure storage
-
-    await cbSecureStorage.save(
-        tag, CBConverter.convertUint8ListToString(hashed));
+    await cbSecureStorage.save(tag, String.fromCharCodes(hashed));
     return encrypted;
   }
 
@@ -120,9 +117,9 @@ class CBEncryptionHelper {
   Future<String> loadEncryptedKey(Uint8List hash, String tag) async {
     //load hashed message from secure storage
     final hashedMessage = await cbSecureStorage.load(tag);
+    final message = Uint8List.fromList(hashedMessage!.codeUnits);
     //decrypt and use hash as key
-    final encrypted = SecretBoxEncrypt.decryptSecretBox(
-        hash, CBConverter.convertStringToUint8List(hashedMessage!));
+    final encrypted = SecretBoxEncrypt.decryptSecretBox(hash, message);
     return encrypted;
   }
 
