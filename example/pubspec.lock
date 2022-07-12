@@ -69,6 +69,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_hsm:
+    dependency: transitive
+    description:
+      path: "/Users/anan/Downloads/flutter_hsm-feature-dev"
+      relative: false
+    source: path
+    version: "0.0.1"
+  flutter_keystore:
+    dependency: transitive
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: f7fd1db8900ccd44e8e30cce1ca115af04214ff8
+      url: "https://github.com/mazidahmad/flutter_keystore.git"
+    source: git
+    version: "0.0.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -135,6 +151,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.4"
+  json_annotation:
+    dependency: transitive
+    description:
+      name: json_annotation
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.5.0"
   lints:
     dependency: transitive
     description:
@@ -191,6 +214,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.6.0"
+  secure_enclave:
+    dependency: transitive
+    description:
+      name: secure_enclave
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2+rev1"
   sky_engine:
     dependency: transitive
     description: flutter

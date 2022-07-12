@@ -1,58 +1,61 @@
-library test_encrypt;
+// library test_encrypt;
 
-import 'salt.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:pinenacl/x25519.dart';
-import 'package:pointycastle/key_derivators/argon2_native_int_impl.dart';
-import 'package:pointycastle/pointycastle.dart';
+// import 'package:test_encrypt/secure_storage.dart';
 
-// pisah argon sama screetbox
-// argonencrypt
-// secretboxencrypt
+// import 'salt.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:pinenacl/x25519.dart';
+// import 'package:pointycastle/key_derivators/argon2_native_int_impl.dart';
+// import 'package:pointycastle/pointycastle.dart';
 
-class TestEncrypt {
-  static Future<Uint8List> hashArgon2(String password) async {
-    Uint8List pin = Uint8List.fromList(password.codeUnits);
-    Salt salt = await _generateAndSaveSalt();
+// // pisah argon sama screetbox
+// // argonencrypt
+// // secretboxencrypt
 
-    var parameters = Argon2Parameters(
-      Argon2Parameters.ARGON2_id,
-      Uint8List.fromList(salt.bytes),
-      desiredKeyLength: 32,
-      version: Argon2Parameters.ARGON2_VERSION_13,
-      iterations: 2,
-      lanes: 1, // Parallelism Factor
-      memory: 256,
-    );
+// class TestEncrypt {
+//   static Future<Uint8List> hashArgon2(String password) async {
+//     Uint8List pin = Uint8List.fromList(password.codeUnits);
+//     Salt salt = await _generateAndSaveSalt();
 
-    var gen = Argon2BytesGenerator();
-    gen.init(parameters);
+//     var parameters = Argon2Parameters(
+//       Argon2Parameters.ARGON2_id,
+//       Uint8List.fromList(salt.bytes),
+//       desiredKeyLength: 32,
+//       version: Argon2Parameters.ARGON2_VERSION_13,
+//       iterations: 2,
+//       lanes: 1, // Parallelism Factor
+//       memory: 256,
+//     );
 
-    var passwordBytes = Uint8List.fromList(pin);
+//     var gen = Argon2BytesGenerator();
+//     gen.init(parameters);
 
-    var result = gen.process(passwordBytes);
+//     var passwordBytes = Uint8List.fromList(pin);
 
-    return result;
-  }
+//     var result = gen.process(passwordBytes);
 
-  static Uint8List encryptSecretBox(Uint8List hash, Uint8List message) {
-    final box = SecretBox(hash);
-    final encrypted = box.encrypt(message);
-    return encrypted.toUint8List();
-  }
+//     return result;
+//   }
 
-  static String decryptScretBox(Uint8List hash, Uint8List encryptedMessage) {
-    final encrypted = EncryptedMessage.fromList(encryptedMessage);
-    final box = SecretBox(hash);
-    final decrypted = box.decrypt(encrypted);
-    return String.fromCharCodes(decrypted);
-  }
+//   static Uint8List encryptSecretBox(Uint8List hash, Uint8List message) {
+//     final box = SecretBox(hash);
+//     final encrypted = box.encrypt(message);
+//     return encrypted.toUint8List();
+//   }
 
-  static Future<Salt> _generateAndSaveSalt() async {
-    const storage = FlutterSecureStorage();
-    Salt salt = Salt.newSalt();
-    String s = String.fromCharCodes(salt.bytes);
-    await storage.write(key: 'generated_salt', value: s);
-    return salt;
-  }
-}
+//   static String decryptScretBox(Uint8List hash, Uint8List encryptedMessage) {
+//     final encrypted = EncryptedMessage.fromList(encryptedMessage);
+//     final box = SecretBox(hash);
+//     final decrypted = box.decrypt(encrypted);
+//     return String.fromCharCodes(decrypted);
+//   }
+
+//   static Future<Salt> _generateAndSaveSalt() async {
+//     const storage = FlutterSecureStorage();
+//     Salt salt = Salt.newSalt();
+//     String s = String.fromCharCodes(salt.bytes);
+//     // await SecureStorage.saveSalt(s);
+
+//     return salt;
+//   }
+// }

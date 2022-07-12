@@ -14,7 +14,8 @@ dependencies:
   pinenacl: ^0.3.4
   pointycastle: ^3.6.0
   plugin_platform_interface: ^2.0.2
-
+  flutter_hsm:
+    path: /Users/anan/Downloads/flutter_hsm-feature-dev
 dev_dependencies:
   flutter_test:
     sdk: flutter
