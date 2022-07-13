@@ -11,7 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_secure_storage: ^5.0.2
-  pinenacl: ^0.3.4
+  pinenacl: 
+    git:
+      url: https://github.com/lustea00/pinenacl-dart
+      ref: master
   pointycastle: ^3.6.0
   plugin_platform_interface: ^2.0.2 
   flutter_hsm:

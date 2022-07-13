@@ -115,11 +115,14 @@ class CBEncryptionHelper {
 
   //returned key is a encrypted key and only can be decrypt by hardware
   Future<String> loadEncryptedKey(Uint8List hash, String tag) async {
+    log(hash.toString(), name: "Load ENcrypt Hash");
     //load hashed message from secure storage
     final hashedMessage = await cbSecureStorage.load(tag);
     final message = Uint8List.fromList(hashedMessage!.codeUnits);
     //decrypt and use hash as key
+
     final encrypted = SecretBoxEncrypt.decryptSecretBox(hash, message);
+
     return encrypted;
   }
 
