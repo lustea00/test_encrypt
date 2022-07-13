@@ -226,12 +226,10 @@ packages:
   pinenacl:
     dependency: transitive
     description:
-      path: "."
-      ref: master
-      resolved-ref: "044855a3e80494aff0bb3c984ada1e8b37983128"
-      url: "https://github.com/lustea00/pinenacl-dart"
-    source: git
-    version: "0.4.2"
+      name: pinenacl
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.0"
   plugin_platform_interface:
     dependency: transitive
     description:

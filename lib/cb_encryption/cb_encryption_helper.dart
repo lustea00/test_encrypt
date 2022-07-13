@@ -45,6 +45,8 @@ class CBEncryptionHelper {
   /// the used for generate hash for the pin
   Future<Uint8List?>? getHash(String pin) async {
     Uint8List? hash;
+    //verify pin dulu
+    //verify => encodedMessage
     final salt = await cbSecureStorage.getSalt(pin);
     if (salt == null) {
       throw PlatformException(code: "password", message: "Password is wrong");
@@ -102,7 +104,7 @@ class CBEncryptionHelper {
       message: presignKey,
       accessControl: AccessControlHsm(
         authRequired: true,
-        options: [AccessControlOption.privateKeyUsage],
+        options: [AccessControlOption.biometryAny],
         tag: tag,
       ),
     );
@@ -134,7 +136,7 @@ class CBEncryptionHelper {
       accessControl: AccessControlHsm(
           authRequired: true,
           options: [
-            AccessControlOption.privateKeyUsage,
+            AccessControlOption.biometryAny,
           ],
           tag: tag),
     );

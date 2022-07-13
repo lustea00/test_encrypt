@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:pinenacl/x25519.dart';
 
 class SecretBoxEncrypt {
@@ -8,9 +10,35 @@ class SecretBoxEncrypt {
   }
 
   static String decryptSecretBox(Uint8List hash, Uint8List encryptedMessage) {
-    final encrypted = EncryptedMessage.fromList(encryptedMessage);
+    // final encrypted = EncryptedMessage.fromList(encryptedMessage);
     final box = SecretBox(hash);
-    final decrypted = box.decrypt(encrypted);
-    return String.fromCharCodes(decrypted);
+    // final decrypted = box.decrypt(encrypted);
+    // return String.fromCharCodes(decrypted);
+
+    var bytelistencryptedMessage = ByteList(
+      encryptedMessage,
+    );
+    final takenonce =
+        bytelistencryptedMessage.take(EncryptedMessage.nonceLength);
+    final chipherTextnonce =
+        bytelistencryptedMessage.skip(EncryptedMessage.nonceLength);
+    ByteList nonce = ByteList.withConstraint(
+      takenonce,
+      constraintLength: EncryptedMessage.nonceLength,
+    );
+    ByteList chipherText = ByteList.withConstraint(chipherTextnonce,
+        constraintLength:
+            bytelistencryptedMessage.length - EncryptedMessage.nonceLength);
+
+    final decrypted = box.decrypt(
+      EncryptedMessage(
+        nonce: nonce.asTypedList,
+        cipherText: chipherText.asTypedList,
+      ),
+    );
+
+    final plaintext = String.fromCharCodes(decrypted);
+
+    return plaintext;
   }
 }
