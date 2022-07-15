@@ -58,38 +58,49 @@ class CBEncryptionHelper {
 
   ///hash will be saved and encrypt with enclave (ios), tee(android)
   ///only if biometry is enrolled
-  Future<void> encrptAndSaveHash(
+  Future<bool> encrptAndSaveHash(
       {required Uint8List hash, String tag = 'hash_tag'}) async {
     //Encrypt and get encrypted HASH
-    final encrypted = await fhsm.encrypt(
-      message: CBConverter.convertUint8ListToString(hash),
-      accessControl: AccessControlHsm(
-        authRequired: true,
-        options: [AccessControlOption.biometryAny],
-        tag: tag,
-      ),
-    );
-    //Save Hash to Secure Storage
-    await cbSecureStorage.save(
-        tag, CBConverter.convertUint8ListToString(encrypted!));
+
+    try {
+      final encrypted = await fhsm.encrypt(
+        message: CBConverter.convertUint8ListToString(hash),
+        accessControl: AccessControlHsm(
+          authRequired: true,
+          options: [AccessControlOption.biometryAny],
+          tag: tag,
+        ),
+      );
+      //Save Hash to Secure Storage
+      await cbSecureStorage.save(
+          tag, CBConverter.convertUint8ListToString(encrypted!));
+      return true;
+    } on PlatformException catch (e) {
+      //Cancel
+      return false;
+    }
   }
 
   ///Get Hash from storage then decrypt with hardware
   ///required biometry.
   Future<String>? loadAndDecryptHash({String tag = 'hash_tag'}) async {
-    //load the encrypted hash
-    final encryptedHash = await cbSecureStorage.load(tag);
-    //decrypt using hardware
-    final decrypted = await fhsm.decrypt(
-      message: CBConverter.convertStringToUint8List(encryptedHash!),
-      accessControl: AccessControlHsm(
-        authRequired: true,
-        options: [AccessControlOption.biometryAny],
-        tag: tag,
-      ),
-    );
+    try {
+      //load the encrypted hash
+      final encryptedHash = await cbSecureStorage.load(tag);
+      //decrypt using hardware
+      final decrypted = await fhsm.decrypt(
+        message: CBConverter.convertStringToUint8List(encryptedHash!),
+        accessControl: AccessControlHsm(
+          authRequired: true,
+          options: [AccessControlOption.biometryAny],
+          tag: tag,
+        ),
+      );
 
-    return decrypted!;
+      return decrypted!;
+    } on PlatformException catch (e) {
+      rethrow;
+    }
   }
 
   ///This function will return layer 1 encryption
@@ -99,20 +110,24 @@ class CBEncryptionHelper {
     String presignKey,
     String tag,
   ) async {
-    //Encrypt with hardware
-    final encrypted = await fhsm.encrypt(
-      message: presignKey,
-      accessControl: AccessControlHsm(
-        authRequired: true,
-        options: [AccessControlOption.biometryAny],
-        tag: tag,
-      ),
-    );
-    //Encrypt using secret box with has as a key
-    final hashed = SecretBoxEncrypt.hashMessage(hash, encrypted!);
-    //Save the encrypted to secure storage
-    await cbSecureStorage.save(tag, String.fromCharCodes(hashed));
-    return encrypted;
+    try {
+      //Encrypt with hardware
+      final encrypted = await fhsm.encrypt(
+        message: presignKey,
+        accessControl: AccessControlHsm(
+          authRequired: true,
+          options: [AccessControlOption.biometryAny],
+          tag: tag,
+        ),
+      );
+      //Encrypt using secret box with has as a key
+      final hashed = SecretBoxEncrypt.hashMessage(hash, encrypted!);
+      //Save the encrypted to secure storage
+      await cbSecureStorage.save(tag, String.fromCharCodes(hashed));
+      return encrypted;
+    } on PlatformException catch (e) {
+      rethrow;
+    }
   }
 
   //returned key is a encrypted key and only can be decrypt by hardware
@@ -129,18 +144,22 @@ class CBEncryptionHelper {
   }
 
   Future<String> decryptKeyWithHardware(String encrypted, String tag) async {
-    //load hashed message from secure storage
-    final newKey = CBConverter.convertStringToUint8List(encrypted);
-    final decrypted = await fhsm.decrypt(
-      message: newKey,
-      accessControl: AccessControlHsm(
-          authRequired: true,
-          options: [
-            AccessControlOption.biometryAny,
-          ],
-          tag: tag),
-    );
+    try {
+      //load hashed message from secure storage
+      final newKey = CBConverter.convertStringToUint8List(encrypted);
+      final decrypted = await fhsm.decrypt(
+        message: newKey,
+        accessControl: AccessControlHsm(
+            authRequired: true,
+            options: [
+              AccessControlOption.biometryAny,
+            ],
+            tag: tag),
+      );
 
-    return decrypted!;
+      return decrypted!;
+    } on PlatformException catch (e) {
+      rethrow;
+    }
   }
 }
