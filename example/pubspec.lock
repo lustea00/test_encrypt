@@ -74,7 +74,7 @@ packages:
     description:
       path: "."
       ref: "feature/dev"
-      resolved-ref: "7e9d6c928730ad8b69e145ed827915c468d2f579"
+      resolved-ref: d63a2bafcef95b72f174275452bda3b7d6b65644
       url: "https://github.com/mazidahmad/flutter_hsm"
     source: git
     version: "0.0.1"
@@ -83,7 +83,7 @@ packages:
     description:
       path: "."
       ref: "feature/biometric"
-      resolved-ref: "32d259a6426a17e48efbc341011314886cd9cb28"
+      resolved-ref: "15a3f5d2a00adc19ccbc726743e9046b7fa0253f"
       url: "https://github.com/mazidahmad/flutter_keystore.git"
     source: git
     version: "0.0.1"
@@ -94,13 +94,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
-    description:
-      name: flutter_plugin_android_lifecycle
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.6"
   flutter_secure_storage:
     dependency: transitive
     description:
@@ -153,13 +146,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  intl:
-    dependency: transitive
-    description:
-      name: intl
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.17.0"
   js:
     dependency: transitive
     description:
@@ -173,7 +159,7 @@ packages:
       name: json_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.5.0"
+    version: "4.6.0"
   lints:
     dependency: transitive
     description:
@@ -181,20 +167,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
-  local_auth_android:
-    dependency: transitive
-    description:
-      name: local_auth_android
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.5"
-  local_auth_platform_interface:
-    dependency: transitive
-    description:
-      name: local_auth_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.4"
   matcher:
     dependency: transitive
     description:
@@ -321,4 +293,4 @@ packages:
     version: "2.1.2"
 sdks:
   dart: ">=2.17.5 <3.0.0"
-  flutter: ">=2.8.0"
+  flutter: ">=2.5.0"
