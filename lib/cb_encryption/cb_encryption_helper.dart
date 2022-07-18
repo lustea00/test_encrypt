@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_hsm/flutter_hsm.dart';
 import 'package:pinenacl/ed25519.dart';
@@ -58,8 +56,10 @@ class CBEncryptionHelper {
 
   ///hash will be saved and encrypt with enclave (ios), tee(android)
   ///only if biometry is enrolled
-  Future<bool> encrptAndSaveHash(
-      {required Uint8List hash, String tag = 'hash_tag'}) async {
+  Future<bool> encrptAndSaveHash({
+    required Uint8List hash,
+    String tag = 'hash_tag',
+  }) async {
     //Encrypt and get encrypted HASH
 
     try {
@@ -83,7 +83,9 @@ class CBEncryptionHelper {
 
   ///Get Hash from storage then decrypt with hardware
   ///required biometry.
-  Future<String>? loadAndDecryptHash({String tag = 'hash_tag'}) async {
+  Future<Uint8List>? loadAndDecryptHash({
+    String tag = 'hash_tag',
+  }) async {
     try {
       //load the encrypted hash
       final encryptedHash = await cbSecureStorage.load(tag);
@@ -97,23 +99,23 @@ class CBEncryptionHelper {
         ),
       );
 
-      return decrypted!;
+      return CBConverter.convertStringToUint8List(decrypted!);
     } on PlatformException catch (e) {
       rethrow;
     }
   }
 
-  ///This function will return layer 1 encryption
-  ///layer 1 : encrypted message with hardware (enclave/strongbox/tee)
+  ///This function will return level1Encryption
+  ///[level1Encryption] ==> key with hardware encryption (enclave, strongbox/tee)
   Future<Uint8List> encryptAndSaveKey(
     Uint8List hash,
-    String presignKey,
+    Uint8List rawKey,
     String tag,
   ) async {
     try {
       //Encrypt with hardware
       final encrypted = await fhsm.encrypt(
-        message: presignKey,
+        message: CBConverter.convertUint8ListToString(rawKey),
         accessControl: AccessControlHsm(
           authRequired: true,
           options: [AccessControlOption.biometryAny],
@@ -130,25 +132,31 @@ class CBEncryptionHelper {
     }
   }
 
-  //returned key is a encrypted key and only can be decrypt by hardware
-  Future<String> loadEncryptedKey(Uint8List hash, String tag) async {
-    log(hash.toString(), name: "Load ENcrypt Hash");
+  ///this function will return level1Encryption
+  ///[level1Encryption] ==> key with hardware encryption (enclave, strongbox/tee)
+  Future<Uint8List> loadEncryptedKey(
+    Uint8List hash,
+    String tag,
+  ) async {
     //load hashed message from secure storage
     final hashedMessage = await cbSecureStorage.load(tag);
     final message = Uint8List.fromList(hashedMessage!.codeUnits);
     //decrypt and use hash as key
-
     final encrypted = SecretBoxEncrypt.decryptSecretBox(hash, message);
 
-    return encrypted;
+    return CBConverter.convertStringToUint8List(encrypted);
   }
 
-  Future<String> decryptKeyWithHardware(String encrypted, String tag) async {
+  ///Decrypt key with hardware. this will return the raw key
+  ///[level1Encryption] ==> key with hardware encryption (enclave, strongbox/tee)
+  Future<String> decryptKeyWithHardware(
+    Uint8List level1Encryption,
+    String tag,
+  ) async {
     try {
       //load hashed message from secure storage
-      final newKey = CBConverter.convertStringToUint8List(encrypted);
       final decrypted = await fhsm.decrypt(
-        message: newKey,
+        message: level1Encryption,
         accessControl: AccessControlHsm(
             authRequired: true,
             options: [
@@ -161,5 +169,12 @@ class CBEncryptionHelper {
     } on PlatformException catch (e) {
       rethrow;
     }
+  }
+
+  Future<Uint8List> encryptWithCustomHash(Uint8List key,
+      {String tag = "this is should be hashkey"}) async {
+    //decrypt and use hash as key
+    final encrypted = SecretBoxEncrypt.encryptKeyWithCustomHash(key, tag);
+    return encrypted;
   }
 }
