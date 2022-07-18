@@ -5,6 +5,7 @@ import 'package:pinenacl/x25519.dart';
 import 'package:test_encrypt/argon_encrypt.dart';
 import 'package:test_encrypt/cb_encryption/cb_converter.dart';
 import 'package:test_encrypt/cb_encryption/cb_secure_storage.dart';
+import 'package:test_encrypt/cb_encryption/encryption.dart';
 import 'package:test_encrypt/salt.dart';
 import 'package:test_encrypt/secret_box_encrypt.dart';
 
@@ -167,14 +168,25 @@ class CBEncryptionHelper {
 
       return decrypted!;
     } on PlatformException catch (e) {
+      print(e);
       rethrow;
     }
   }
 
-  Future<Uint8List> encryptWithCustomHash(Uint8List key,
+  Future<UploadResponse> encryptWithCustomHash(Uint8List key,
       {String tag = "this is should be hashkey"}) async {
     //decrypt and use hash as key
-    final encrypted = SecretBoxEncrypt.encryptKeyWithCustomHash(key, tag);
-    return encrypted;
+    final hash = await ArgonEncrypt.generateHashWithSalt(tag, Salt.newSalt());
+
+    final encrypted =
+        await SecretBoxEncrypt.encryptKeyWithCustomHash(key, hash);
+    final uploadResponse = UploadResponse(hash, encrypted);
+    return uploadResponse;
+  }
+
+  String decryptWithCustomHash(Uint8List key, Uint8List hash) {
+    //decrypt and use hash as key
+    final raw = SecretBoxEncrypt.decryptSecretBox(hash, key);
+    return raw;
   }
 }

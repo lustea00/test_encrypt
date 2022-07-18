@@ -1,17 +1,9 @@
-import 'dart:developer';
-import 'dart:math';
-import 'package:pinenacl/api.dart';
-
 import 'package:pinenacl/x25519.dart';
-import 'package:test_encrypt/argon_encrypt.dart';
-import 'package:test_encrypt/salt.dart';
 
 class SecretBoxEncrypt {
   static Future<Uint8List> encryptKeyWithCustomHash(
-      Uint8List key, String hashTag) async {
-    final _hash =
-        await ArgonEncrypt.generateHashWithSalt(hashTag, Salt.newSalt());
-    final box = SecretBox(_hash);
+      Uint8List key, Uint8List hash) async {
+    final box = SecretBox(hash);
     final encrypted = box.encrypt(key);
     return encrypted.toUint8List();
   }
