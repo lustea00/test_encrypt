@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_hsm/flutter_hsm.dart';
 import 'package:pinenacl/ed25519.dart';
@@ -7,6 +5,7 @@ import 'package:pinenacl/x25519.dart';
 import 'package:test_encrypt/argon_encrypt.dart';
 import 'package:test_encrypt/cb_encryption/cb_converter.dart';
 import 'package:test_encrypt/cb_encryption/cb_secure_storage.dart';
+import 'package:test_encrypt/cb_encryption/encryption.dart';
 import 'package:test_encrypt/salt.dart';
 import 'package:test_encrypt/secret_box_encrypt.dart';
 
@@ -45,6 +44,8 @@ class CBEncryptionHelper {
   /// the used for generate hash for the pin
   Future<Uint8List?>? getHash(String pin) async {
     Uint8List? hash;
+    //verify pin dulu
+    //verify => encodedMessage
     final salt = await cbSecureStorage.getSalt(pin);
     if (salt == null) {
       throw PlatformException(code: "password", message: "Password is wrong");
@@ -56,83 +57,136 @@ class CBEncryptionHelper {
 
   ///hash will be saved and encrypt with enclave (ios), tee(android)
   ///only if biometry is enrolled
-  Future<void> encrptAndSaveHash(
-      {required Uint8List hash, String tag = 'hash_tag'}) async {
+  Future<bool> encrptAndSaveHash({
+    required Uint8List hash,
+    String tag = 'hash_tag',
+  }) async {
     //Encrypt and get encrypted HASH
-    final encrypted = await fhsm.encrypt(
-      message: String.fromCharCodes(hash),
-      accessControl: AccessControlHsm(
-        authRequired: true,
-        options: [AccessControlOption.biometryAny],
-        tag: tag,
-      ),
-    );
-    //Save Hash to Secure Storage
-    await cbSecureStorage.save(
-        tag, CBConverter.convertUint8ListToString(encrypted!));
+
+    try {
+      final encrypted = await fhsm.encrypt(
+        message: CBConverter.convertUint8ListToString(hash),
+        accessControl: AccessControlHsm(
+          authRequired: true,
+          options: [AccessControlOption.biometryAny],
+          tag: tag,
+        ),
+      );
+      //Save Hash to Secure Storage
+      await cbSecureStorage.save(
+          tag, CBConverter.convertUint8ListToString(encrypted!));
+      return true;
+    } on PlatformException catch (e) {
+      //Cancel
+      return false;
+    }
   }
 
   ///Get Hash from storage then decrypt with hardware
   ///required biometry.
-  Future<String>? loadAndDecryptHash({String tag = 'hash_tag'}) async {
-    //load the encrypted hash
-    final encryptedHash = await cbSecureStorage.load(tag);
-    //decrypt using hardware
-    final decrypted = await fhsm.decrypt(
-      message: Uint8List.fromList(encryptedHash!.codeUnits),
-      accessControl: AccessControlHsm(
-        authRequired: true,
-        options: [AccessControlOption.biometryAny],
-        tag: tag,
-      ),
-    );
+  Future<Uint8List>? loadAndDecryptHash({
+    String tag = 'hash_tag',
+  }) async {
+    try {
+      //load the encrypted hash
+      final encryptedHash = await cbSecureStorage.load(tag);
+      //decrypt using hardware
+      final decrypted = await fhsm.decrypt(
+        message: CBConverter.convertStringToUint8List(encryptedHash!),
+        accessControl: AccessControlHsm(
+          authRequired: true,
+          options: [AccessControlOption.biometryAny],
+          tag: tag,
+        ),
+      );
 
-    return decrypted!;
+      return CBConverter.convertStringToUint8List(decrypted!);
+    } on PlatformException catch (e) {
+      rethrow;
+    }
   }
 
-  Future<void> encryptAndSaveKey(
-      Uint8List hash, Uint8List presignKey, String tag) async {
-    String decrypted = String.fromCharCodes(presignKey);
-    //Encrypt with hardware
-    final encrypted = await fhsm.encrypt(
-      message: decrypted,
-      accessControl: AccessControlHsm(
-        authRequired: true,
-        options: [AccessControlOption.privateKeyUsage],
-        tag: tag,
-      ),
-    );
-    //Encrypt using secret box with has as a key
-    final hashed = SecretBoxEncrypt.hashMessage(hash, encrypted!);
-    //Save the encrypted to secure storage
-
-    await cbSecureStorage.save(
-        tag, CBConverter.convertUint8ListToString(hashed));
+  ///This function will return level1Encryption
+  ///[level1Encryption] ==> key with hardware encryption (enclave, strongbox/tee)
+  Future<Uint8List> encryptAndSaveKey(
+    Uint8List hash,
+    Uint8List rawKey,
+    String tag,
+  ) async {
+    try {
+      //Encrypt with hardware
+      final encrypted = await fhsm.encrypt(
+        message: CBConverter.convertUint8ListToString(rawKey),
+        accessControl: AccessControlHsm(
+          authRequired: true,
+          options: [AccessControlOption.biometryAny],
+          tag: tag,
+        ),
+      );
+      //Encrypt using secret box with has as a key
+      final hashed = SecretBoxEncrypt.hashMessage(hash, encrypted!);
+      //Save the encrypted to secure storage
+      await cbSecureStorage.save(tag, String.fromCharCodes(hashed));
+      return encrypted;
+    } on PlatformException catch (e) {
+      rethrow;
+    }
   }
 
-  //returned key is a encrypted key and only can be decrypt by hardware
-  Future<String> loadEncryptedKey(Uint8List hash, String tag) async {
+  ///this function will return level1Encryption
+  ///[level1Encryption] ==> key with hardware encryption (enclave, strongbox/tee)
+  Future<Uint8List> loadEncryptedKey(
+    Uint8List hash,
+    String tag,
+  ) async {
     //load hashed message from secure storage
     final hashedMessage = await cbSecureStorage.load(tag);
+    final message = Uint8List.fromList(hashedMessage!.codeUnits);
     //decrypt and use hash as key
-    final encrypted = SecretBoxEncrypt.decryptSecretBox(
-        hash, CBConverter.convertStringToUint8List(hashedMessage!));
-    return encrypted;
+    final encrypted = SecretBoxEncrypt.decryptSecretBox(hash, message);
+
+    return CBConverter.convertStringToUint8List(encrypted);
   }
 
-  Future<String> decryptKeyWithHardware(String encrypted, String tag) async {
-    //load hashed message from secure storage
-    final newKey = CBConverter.convertStringToUint8List(encrypted);
-    final decrypted = await fhsm.decrypt(
-      message: newKey,
-      accessControl: AccessControlHsm(
-          authRequired: true,
-          options: [
-            AccessControlOption.privateKeyUsage,
-          ],
-          tag: tag),
-    );
+  ///Decrypt key with hardware. this will return the raw key
+  ///[level1Encryption] ==> key with hardware encryption (enclave, strongbox/tee)
+  Future<String> decryptKeyWithHardware(
+    Uint8List level1Encryption,
+    String tag,
+  ) async {
+    try {
+      //load hashed message from secure storage
+      final decrypted = await fhsm.decrypt(
+        message: level1Encryption,
+        accessControl: AccessControlHsm(
+            authRequired: true,
+            options: [
+              AccessControlOption.biometryAny,
+            ],
+            tag: tag),
+      );
 
-    return decrypted!;
+      return decrypted!;
+    } on PlatformException catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<UploadResponse> encryptWithCustomHash(Uint8List key,
+      {String tag = "this is should be hashkey"}) async {
+    //decrypt and use hash as key
+    final hash = await ArgonEncrypt.generateHashWithSalt(tag, Salt.newSalt());
+
+    final encrypted =
+        await SecretBoxEncrypt.encryptKeyWithCustomHash(key, hash);
+    final uploadResponse = UploadResponse(hash, encrypted);
+    return uploadResponse;
+  }
+
+  String decryptWithCustomHash(Uint8List key, Uint8List hash) {
+    //decrypt and use hash as key
+    final raw = SecretBoxEncrypt.decryptSecretBox(hash, key);
+    return raw;
   }
 }
