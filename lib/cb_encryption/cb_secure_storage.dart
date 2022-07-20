@@ -115,7 +115,6 @@ class CBSecureStorage {
       iOptions: _getIOSOptions(),
       aOptions: _getAndroidOptions(),
     );
-    log('dari list' + s.toString());
     return result;
   }
 
