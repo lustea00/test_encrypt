@@ -3,7 +3,6 @@ import 'package:flutter_hsm/flutter_hsm.dart';
 import 'package:pinenacl/ed25519.dart';
 import 'package:pinenacl/x25519.dart';
 import 'package:test_encrypt/argon_encrypt.dart';
-import 'package:test_encrypt/cb_encryption/cb_converter.dart';
 import 'package:test_encrypt/cb_encryption/cb_secure_storage.dart';
 import 'package:test_encrypt/cb_encryption/encryption.dart';
 import 'package:test_encrypt/salt.dart';
@@ -168,7 +167,6 @@ class CBEncryptionHelper {
 
       return decrypted!;
     } on PlatformException catch (e) {
-      print(e);
       rethrow;
     }
   }

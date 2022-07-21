@@ -1,6 +1,4 @@
-import 'dart:developer';
 import 'dart:typed_data';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class CBSecureStorage {
@@ -17,7 +15,7 @@ class CBSecureStorage {
   IOSOptions _getIOSOptions() => const IOSOptions();
 
   AndroidOptions _getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: true,
+        encryptedSharedPreferences: false,
       );
 
   String sharedKey = 'encrypted_shared_key';
