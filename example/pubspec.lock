@@ -74,7 +74,7 @@ packages:
     description:
       path: "."
       ref: "feature/dev"
-      resolved-ref: d63a2bafcef95b72f174275452bda3b7d6b65644
+      resolved-ref: "713bd937dffceda95a2d6448fb0d317232d03fa9"
       url: "https://github.com/mazidahmad/flutter_hsm"
     source: git
     version: "0.0.1"
@@ -83,7 +83,7 @@ packages:
     description:
       path: "."
       ref: "feature/biometric"
-      resolved-ref: "15a3f5d2a00adc19ccbc726743e9046b7fa0253f"
+      resolved-ref: a282fd38131de443b7f3bb61b59a5875e4361e72
       url: "https://github.com/mazidahmad/flutter_keystore.git"
     source: git
     version: "0.0.1"

@@ -10,6 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # flutter_hsm:
+  #   path: /Users/anan/Documents/hsm_new
+      
   flutter_hsm:
     git:
       url: https://github.com/mazidahmad/flutter_hsm

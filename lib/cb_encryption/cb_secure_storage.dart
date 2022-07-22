@@ -14,9 +14,7 @@ class CBSecureStorage {
 
   IOSOptions _getIOSOptions() => const IOSOptions();
 
-  AndroidOptions _getAndroidOptions() => const AndroidOptions(
-        encryptedSharedPreferences: false,
-      );
+  AndroidOptions _getAndroidOptions() => const AndroidOptions();
 
   String sharedKey = 'encrypted_shared_key';
   String presignKey = 'encrypted_presign_key';
